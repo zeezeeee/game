@@ -56,26 +56,7 @@
         font-size: 24px;
         color: #333;
     }
-    #upgradeButton {
-        position: fixed;
-        bottom: 50px;
-        left: 10px;
-        font-size: 18px;
-        color: #333;
-        padding: 10px 20px;
-        border: none;
-        background-color: #ffc107;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-    #upgradeCostDisplay {
-        position: fixed;
-        bottom: 10px;
-        left: 10px;
-        font-size: 14px;
-        color: #333;
-    }
-    #changelogButton {
+    #shopButton {
         position: fixed;
         bottom: 10px;
         right: 10px;
@@ -87,21 +68,39 @@
         cursor: pointer;
         border-radius: 5px;
     }
+    #shopMenu {
+        position: fixed;
+        bottom: 50px;
+        right: 10px;
+        padding: 10px;
+        border: 2px solid #333;
+        background-color: #fff;
+        display: none;
+    }
+    .shopItem {
+        margin-bottom: 10px;
+        padding: 5px 10px;
+        border: none;
+        background-color: #ffc107;
+        cursor: pointer;
+        border-radius: 5px;
+    }
 </style>
 </head>
 <body>
-<div id="version">v1.0.1</div>
+<div id="version">v1.0.2</div>
 <div id="score">Score: <span id="scoreValue">0</span></div>
 <div id="winMessage" style="display: none;">You win! Please restart the page to play again.</div>
 <div id="timer">Timer: <span id="timerValue">0.00</span></div>
 <div id="getToWin">Get to <span id="goalValue">150</span> points to win!</div>
-<button id="upgradeButton">Upgrade (+2x points per click) - <span id="upgradeCost">50</span> points</button>
-<div id="upgradeCostDisplay">Cost: <span id="upgradeCostValue">50</span> points</div>
-<button id="changelogButton">Changelog</button>
-<div id="changelog" style="display: none;">
-    <p style="color: green;">Added:</p>
-    <p>- 2x button</p>
-    <p>- Score goes up every time you win to make it more challenging</p>
+<button id="shopButton">Shop</button>
+<div id="shopMenu">
+    <div class="shopItem" id="item1">Increase Score (+1 per click) - <span id="item1Cost">50</span> points</div>
+    <div class="shopItem" id="item2">Increase Score (+2 per click) - <span id="item2Cost">100</span> points</div>
+    <div class="shopItem" id="item3">Increase Score (+3 per click) - <span id="item3Cost">150</span> points</div>
+    <div class="shopItem" id="item4">Autoclicker - <span id="item4Cost">200</span> points</div>
+    <div class="shopItem" id="item5">Increase Autoclicker Speed - <span id="item5Cost">300</span> points</div>
+    <div class="shopItem" id="item6">Increase Ball Spawn Speed - <span id="item6Cost">200</span> points</div>
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -111,7 +110,12 @@
         let timer = 0;
         let timerInterval;
         let pointsPerClick = 1;
-        let upgradeCost = 50;
+        let upgradeCosts = [50, 100, 150, 200, 300];
+        let ballSpawnInterval = 2000;
+        let originalBallSpawnInterval = ballSpawnInterval;
+        let autoclickerSpeed = 10000;
+        let autoclickerInterval;
+        let upgradesBought = [0, 0, 0, 0, 0];
 
         function createBall() {
             if (score >= parseInt(document.getElementById("goalValue").innerText)) {
@@ -119,8 +123,9 @@
                 clearInterval(timerInterval);
                 score += 50;
                 document.getElementById("scoreValue").innerText = score;
-                document.getElementById("winMessage").style.display = "block";
+                document.getElementById("winMessage").style.visibility = "visible";
                 document.getElementById("goalValue").innerText = parseInt(document.getElementById("goalValue").innerText) + 50;
+                resetUpgrades();
                 return;
             }
             const ball = document.createElement("div");
@@ -136,7 +141,7 @@
         }
 
         function startCreatingBalls() {
-            intervalID = setInterval(createBall, 500);
+            intervalID = setInterval(createBall, ballSpawnInterval);
             timerInterval = setInterval(updateTimer, 10);
         }
 
@@ -150,31 +155,95 @@
             document.getElementById("timerValue").innerText = timer.toFixed(2);
         }
 
-        function upgradePoints() {
-            if (score >= upgradeCost) {
-                pointsPerClick *= 2;
-                score -= upgradeCost;
+        function purchaseUpgrade(itemIndex) {
+            const cost = upgradeCosts[itemIndex];
+            if (score >= cost) {
+                switch (itemIndex) {
+                    case 0:
+                        pointsPerClick++;
+                        break;
+                    case 1:
+                        pointsPerClick += 2;
+                        break;
+                    case 2:
+                        pointsPerClick += 3;
+                        break;
+                    case 3:
+                        startAutoclicker();
+                        break;
+                    case 4:
+                        increaseAutoclickerSpeed();
+                        break;
+                    case 5:
+                        decreaseBallSpawnInterval();
+                        break;
+                    default:
+                        break;
+                }
+                score -= cost;
                 document.getElementById("scoreValue").innerText = score;
-                upgradeCost *= 2;
-                document.getElementById("upgradeCost").innerText = upgradeCost;
-                document.getElementById("upgradeButton").innerText = "Upgrade (+2x points per click) - " + upgradeCost + " points";
-                document.getElementById("upgradeCostValue").innerText = upgradeCost;
+                upgradeCosts[itemIndex] *= 2;
+                document.getElementById("item" + (itemIndex + 1) + "Cost").innerText = upgradeCosts[itemIndex];
+                upgradesBought[itemIndex]++;
             } else {
                 alert("Not enough points to purchase the upgrade!");
             }
         }
 
+        function startAutoclicker() {
+            autoclickerInterval = setInterval(clickRandomBall, autoclickerSpeed);
+        }
+
+        function clickRandomBall() {
+            const balls = document.querySelectorAll(".ball");
+            if (balls.length > 0) {
+                const randomIndex = Math.floor(Math.random() * balls.length);
+                const ball = balls[randomIndex];
+                score += pointsPerClick;
+                document.getElementById("scoreValue").innerText = score;
+                ball.remove();
+            }
+        }
+
+        function increaseAutoclickerSpeed() {
+            autoclickerSpeed /= 2;
+            clearInterval(autoclickerInterval);
+            startAutoclicker();
+        }
+
+        function decreaseBallSpawnInterval() {
+            ballSpawnInterval /= 2;
+            clearInterval(intervalID);
+            startCreatingBalls();
+        }
+
+        function resetUpgrades() {
+            pointsPerClick = 1;
+            ballSpawnInterval = originalBallSpawnInterval;
+            upgradesBought = [0, 0, 0, 0, 0];
+            for (let i = 0; i < upgradeCosts.length; i++) {
+                const cost = upgradeCosts[i] / Math.pow(2, upgradesBought[i]);
+                upgradeCosts[i] = cost;
+                document.getElementById("item" + (i + 1) + "Cost").innerText = cost;
+            }
+        }
+
         startCreatingBalls();
 
-        document.getElementById("upgradeButton").addEventListener("click", upgradePoints);
-
-        document.getElementById("changelogButton").addEventListener("click", function() {
-            const changelog = document.getElementById("changelog");
-            if (changelog.style.display === "none") {
-                changelog.style.display = "block";
+        document.getElementById("shopButton").addEventListener("click", function() {
+            const shopMenu = document.getElementById("shopMenu");
+            if (shopMenu.style.display === "none") {
+                shopMenu.style.display = "block";
             } else {
-                changelog.style.display = "none";
+                shopMenu.style.display = "none";
             }
+        });
+
+        document.querySelectorAll(".shopItem").forEach(item => {
+            item.addEventListener("click", function() {
+                const itemIndex = parseInt(this.id.slice(-1)) - 1;
+                purchaseUpgrade(itemIndex);
+            });
         });
     });
 </script>
