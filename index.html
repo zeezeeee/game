@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ball game by zeze</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+    }
+    .ball {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: red;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    #score {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        color: #333;
+    }
+    #version {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        font-size: 16px;
+        color: #333;
+    }
+    #winMessage {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 24px;
+        color: green;
+        visibility: hidden;
+    }
+    #timer {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 24px;
+        color: #333;
+    }
+    #getToWin {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 24px;
+        color: #333;
+    }
+    #upgradeButton {
+        position: fixed;
+        bottom: 50px;
+        left: 10px;
+        font-size: 18px;
+        color: #333;
+        padding: 10px 20px;
+        border: none;
+        background-color: #ffc107;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    #upgradeCostDisplay {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        font-size: 14px;
+        color: #333;
+    }
+    #changelogButton {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        font-size: 16px;
+        color: #333;
+        padding: 5px 10px;
+        border: none;
+        background-color: #007bff;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+</style>
+</head>
+<body>
+<div id="version">v1.0.1</div>
+<div id="score">Score: <span id="scoreValue">0</span></div>
+<div id="winMessage" style="display: none;">You win! Please restart the page to play again.</div>
+<div id="timer">Timer: <span id="timerValue">0.00</span></div>
+<div id="getToWin">Get to <span id="goalValue">150</span> points to win!</div>
+<button id="upgradeButton">Upgrade (+2x points per click) - <span id="upgradeCost">50</span> points</button>
+<div id="upgradeCostDisplay">Cost: <span id="upgradeCostValue">50</span> points</div>
+<button id="changelogButton">Changelog</button>
+<div id="changelog" style="display: none;">
+    <p style="color: green;">Added:</p>
+    <p>- 2x button</p>
+    <p>- Score goes up every time you win to make it more challenging</p>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const numBalls = 20;
+        let intervalID;
+        let score = 0;
+        let timer = 0;
+        let timerInterval;
+        let pointsPerClick = 1;
+        let upgradeCost = 50;
+
+        function createBall() {
+            if (score >= parseInt(document.getElementById("goalValue").innerText)) {
+                clearInterval(intervalID);
+                clearInterval(timerInterval);
+                score += 50;
+                document.getElementById("scoreValue").innerText = score;
+                document.getElementById("winMessage").style.display = "block";
+                document.getElementById("goalValue").innerText = parseInt(document.getElementById("goalValue").innerText) + 50;
+                return;
+            }
+            const ball = document.createElement("div");
+            ball.className = "ball";
+            ball.style.left = Math.random() * window.innerWidth + "px";
+            ball.style.top = Math.random() * window.innerHeight + "px";
+            document.body.appendChild(ball);
+            ball.addEventListener("click", function() {
+                score += pointsPerClick;
+                document.getElementById("scoreValue").innerText = score;
+                this.remove();
+            });
+        }
+
+        function startCreatingBalls() {
+            intervalID = setInterval(createBall, 500);
+            timerInterval = setInterval(updateTimer, 10);
+        }
+
+        function stopCreatingBalls() {
+            clearInterval(intervalID);
+            clearInterval(timerInterval);
+        }
+
+        function updateTimer() {
+            timer += 0.01;
+            document.getElementById("timerValue").innerText = timer.toFixed(2);
+        }
+
+        function upgradePoints() {
+            if (score >= upgradeCost) {
+                pointsPerClick *= 2;
+                score -= upgradeCost;
+                document.getElementById("scoreValue").innerText = score;
+                upgradeCost *= 2;
+                document.getElementById("upgradeCost").innerText = upgradeCost;
+                document.getElementById("upgradeButton").innerText = "Upgrade (+2x points per click) - " + upgradeCost + " points";
+                document.getElementById("upgradeCostValue").innerText = upgradeCost;
+            } else {
+                alert("Not enough points to purchase the upgrade!");
+            }
+        }
+
+        startCreatingBalls();
+
+        document.getElementById("upgradeButton").addEventListener("click", upgradePoints);
+
+        document.getElementById("changelogButton").addEventListener("click", function() {
+            const changelog = document.getElementById("changelog");
+            if (changelog.style.display === "none") {
+                changelog.style.display = "block";
+            } else {
+                changelog.style.display = "none";
+            }
+        });
+    });
+</script>
+</body>
+</html>
