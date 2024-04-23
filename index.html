@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ball game by zeze</title>
+<title>ball game by zeze</title>
 <style>
     body {
         margin: 0;
@@ -16,6 +16,12 @@
         background-color: red;
         border-radius: 50%;
         cursor: pointer;
+    }
+    .green-ball {
+        background-color: green;
+    }
+    .blue-ball {
+        background-color: blue;
     }
     #score {
         position: fixed;
@@ -88,9 +94,9 @@
 </style>
 </head>
 <body>
-<div id="version">v1.0.2</div>
+<div id="version">v1.0.1</div>
 <div id="score">Score: <span id="scoreValue">0</span></div>
-<div id="winMessage" style="display: none;">You win! Please restart the page to play again.</div>
+<div id="winMessage" style="display: none;">You won! Time for the next round.</div>
 <div id="timer">Timer: <span id="timerValue">0.00</span></div>
 <div id="getToWin">Get to <span id="goalValue">150</span> points to win!</div>
 <button id="shopButton">Shop</button>
@@ -116,25 +122,44 @@
         let autoclickerSpeed = 10000;
         let autoclickerInterval;
         let upgradesBought = [0, 0, 0, 0, 0];
+        let round = 1;
 
         function createBall() {
             if (score >= parseInt(document.getElementById("goalValue").innerText)) {
                 clearInterval(intervalID);
                 clearInterval(timerInterval);
-                score += 50;
+                score = 0;
                 document.getElementById("scoreValue").innerText = score;
                 document.getElementById("winMessage").style.visibility = "visible";
-                document.getElementById("goalValue").innerText = parseInt(document.getElementById("goalValue").innerText) + 50;
+                document.getElementById("goalValue").innerText = parseInt(document.getElementById("goalValue").innerText) * 2;
                 resetUpgrades();
+                setTimeout(function() {
+                    document.getElementById("winMessage").style.visibility = "hidden";
+                    startCreatingBalls();
+                }, 2000); 
+                round++;
                 return;
             }
             const ball = document.createElement("div");
             ball.className = "ball";
+            if (round >= 2 && Math.random() < 0.2) {
+                ball.classList.add("green-ball");
+            }
+            if (round >= 3 && Math.random() < 0.1) {
+                ball.classList.add("blue-ball");
+            }
             ball.style.left = Math.random() * window.innerWidth + "px";
             ball.style.top = Math.random() * window.innerHeight + "px";
             document.body.appendChild(ball);
             ball.addEventListener("click", function() {
-                score += pointsPerClick;
+                let points = pointsPerClick;
+                if (ball.classList.contains("green-ball")) {
+                    points *= 2;
+                }
+                if (ball.classList.contains("blue-ball")) {
+                    points *= 3;
+                }
+                score += points;
                 document.getElementById("scoreValue").innerText = score;
                 this.remove();
             });
@@ -199,7 +224,14 @@
             if (balls.length > 0) {
                 const randomIndex = Math.floor(Math.random() * balls.length);
                 const ball = balls[randomIndex];
-                score += pointsPerClick;
+                let points = pointsPerClick;
+                if (ball.classList.contains("green-ball")) {
+                    points *= 2;
+                }
+                if (ball.classList.contains("blue-ball")) {
+                    points *= 3;
+                }
+                score += points;
                 document.getElementById("scoreValue").innerText = score;
                 ball.remove();
             }
@@ -221,10 +253,9 @@
             pointsPerClick = 1;
             ballSpawnInterval = originalBallSpawnInterval;
             upgradesBought = [0, 0, 0, 0, 0];
+            upgradeCosts = [50, 100, 150, 200, 300]; 
             for (let i = 0; i < upgradeCosts.length; i++) {
-                const cost = upgradeCosts[i] / Math.pow(2, upgradesBought[i]);
-                upgradeCosts[i] = cost;
-                document.getElementById("item" + (i + 1) + "Cost").innerText = cost;
+                document.getElementById("item" + (i + 1) + "Cost").innerText = upgradeCosts[i];
             }
         }
 
