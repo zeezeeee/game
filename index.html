@@ -9,6 +9,18 @@
         margin: 0;
         overflow: hidden;
     }
+    #mainMenu {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        font-size: 24px;
+    }
+    .menuItem {
+        margin: 20px 0;
+        cursor: pointer;
+    }
     .ball {
         position: absolute;
         width: 20px;
@@ -94,22 +106,39 @@
 </style>
 </head>
 <body>
-<div id="version">v1.0.3</div>
-<div id="score">Score: <span id="scoreValue">0</span></div>
-<div id="winMessage" style="display: none;">You won! Time for the next round.</div>
-<div id="timer">Timer: <span id="timerValue">0.00</span></div>
-<div id="getToWin">Get to <span id="goalValue">150</span> points to win!</div>
-<button id="shopButton">Shop</button>
-<div id="shopMenu">
-    <div class="shopItem" id="item1">Increase Score (+1 per click) - <span id="item1Cost">50</span> points</div>
-    <div class="shopItem" id="item2">Increase Score (+2 per click) - <span id="item2Cost">100</span> points</div>
-    <div class="shopItem" id="item3">Increase Score (+3 per click) - <span id="item3Cost">150</span> points</div>
-    <div class="shopItem" id="item4">Autoclicker - <span id="item4Cost">200</span> points</div>
-    <div class="shopItem" id="item5">Increase Autoclicker Speed - <span id="item5Cost">300</span> points</div>
-    <div class="shopItem" id="item6">Increase Ball Spawn Speed - <span id="item6Cost">200</span> points</div>
+<div id="mainMenu">
+    <div id="title">Zee Epic Ball Game</div>
+    <div class="menuItem" id="play">Play</div>
+    <div class="menuItem" id="settings">Settings (WIP)</div>
+</div>
+<div id="game" style="display: none;">
+    <div id="version">v1.0.3</div>
+    <div id="score">Score: <span id="scoreValue">0</span></div>
+    <div id="winMessage" style="display: none;">You won! Time for the next round.</div>
+    <div id="timer">Timer: <span id="timerValue">0.00</span></div>
+    <div id="getToWin">Get to <span id="goalValue">150</span> points to win!</div>
+    <button id="shopButton">Shop</button>
+    <div id="shopMenu">
+        <div class="shopItem" id="item1">Increase Score (+1 per click) - <span id="item1Cost">50</span> points</div>
+        <div class="shopItem" id="item2">Increase Score (+2 per click) - <span id="item2Cost">100</span> points</div>
+        <div class="shopItem" id="item3">Increase Score (+3 per click) - <span id="item3Cost">150</span> points</div>
+        <div class="shopItem" id="item4">Autoclicker - <span id="item4Cost">200</span> points</div>
+        <div class="shopItem" id="item5">Increase Autoclicker Speed - <span id="item5Cost">300</span> points</div>
+        <div class="shopItem" id="item6">Increase Ball Spawn Speed - <span id="item6Cost">200</span> points</div>
+    </div>
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("play").addEventListener("click", function() {
+            document.getElementById("mainMenu").style.display = "none";
+            document.getElementById("game").style.display = "block";
+            startCreatingBalls();
+        });
+
+        document.getElementById("settings").addEventListener("click", function() {
+            alert("Settings are a work in progress!");
+        });
+
         const numBalls = 20;
         let intervalID;
         let score = 0;
@@ -258,8 +287,6 @@
                 document.getElementById("item" + (i + 1) + "Cost").innerText = upgradeCosts[i];
             }
         }
-
-        startCreatingBalls();
 
         document.getElementById("shopButton").addEventListener("click", function() {
             const shopMenu = document.getElementById("shopMenu");
